@@ -2,9 +2,11 @@ import numpy as numpy
 from tabulate import tabulate
 
 class State: # class for each unit on the game
-    def __init__(self, _id):
+    def __init__(self, id):
+        # additional digit of 15 which directly under 13
+        self.digit_15 = 16
         self.value = 0
-        self.id = _id
+        self.id = id
         self.left_bound = max(1, (self.id // 4) * 4)  # save the left border
         self.right_bound =  min(14, (self.id // 4) * 4 + 3) # save the right border
         self.nextS = [self.move('L'), self.move('R'), self.move('U'), self.move('D')]
@@ -16,8 +18,8 @@ class State: # class for each unit on the game
                 return self.id - 1
             elif self.id - 1 == 0:
                 return 0
-            elif self.id == 16:
-                return 16
+            elif self.id == self.digit_15:
+                return self.digit_15
             else:
                 return self.id
         if u == 'R':  # move right
@@ -25,8 +27,8 @@ class State: # class for each unit on the game
                 return self.id + 1
             elif self.id + 1 == 15:
                 return 0
-            elif self.id == 16:
-                return 16
+            elif self.id == self.digit_15:
+                return self.digit_15
             else:
                 return self.id
         if u == 'U':  # move up
@@ -34,7 +36,7 @@ class State: # class for each unit on the game
                 return self.id - 4
             elif self.id - 4 == 0:
                 return 0
-            elif self.id == 16:
+            elif self.id == self.digit_15:
                 return 13
             else:
                 return self.id
@@ -44,7 +46,7 @@ class State: # class for each unit on the game
             elif self.id + 4 == 15:
                 return 0
             elif self.id == 13:
-                return 16
+                return self.digit_15
             else:
                 return self.id
 
@@ -58,13 +60,16 @@ class State: # class for each unit on the game
         # print("new value" + str(S[self.nextS[i]].value))
         self.value = -1+0.25 * V
 
-def train(k=10):
+def train(k):
+    assert isinstance(k, int), 'k should be an integer'
+    # again initiate digit 15 with key 16
+    digit_15 = 16
     V  = []
     S_T = State(0)
     S = {0: S_T}
     for j in range(1, 15):
         S[j] = State(j)
-    S[16] = State(16)
+    S[digit_15] = State(digit_15)
     for loop in range(k):
         if loop>=1000 and loop%1000 == 0:
             print("Training "+str(loop)+"'s loop.......Remaining: "+str(k-loop)+ " loops")
@@ -75,7 +80,7 @@ def train(k=10):
         else:
             for j in range(14, 0, -1):
                 S[j].update(S)
-        S[16].update(S)
+        S[digit_15].update(S)
     for t in range(0,17):
         if t == 0 or t == 15:
             V.append("0")
